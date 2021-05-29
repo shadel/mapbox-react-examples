@@ -1,9 +1,11 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import mapboxgl from 'mapbox-gl';
 import Legend from './components/Legend';
 import Optionsfield from './components/Optionsfield';
 import './Map.css';
 import data from './data.json';
+import SearchLocation from './search/SearchLocation';
+import sites from "./search/sites.json";
 
 mapboxgl.accessToken =
   'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4M29iazA2Z2gycXA4N2pmbDZmangifQ.-g_vE53SD2WrJ6tFX7QHmA';
@@ -47,6 +49,8 @@ const Map = () => {
   const [active, setActive] = useState(options[0]);
   const [map, setMap] = useState(null);
 
+  const [mapLoadedFlg, setMapLoadFlg] = useState(false);
+
   // Initialize map when component mounts
   useEffect(() => {
     const map = new mapboxgl.Map({
@@ -57,6 +61,7 @@ const Map = () => {
     });
 
     map.on('load', () => {
+      setMapLoadFlg(true);
       map.addSource('countries', {
         type: 'geojson',
         data
@@ -81,16 +86,38 @@ const Map = () => {
       map.addLayer(
         {
           id: 'countries',
-          type: 'fill',
+          // type: 'fill',
           source: 'countries'
         },
         'country-label'
       );
 
-      map.setPaintProperty('countries', 'fill-color', {
-        property: active.property,
-        stops: active.stops
+      // map.setPaintProperty('countries', 'fill-color', {
+      //   property: active.property,
+      //   stops: active.stops
+      // });
+
+      map.addLayer({
+        "id": "locations",
+        "type": "circle",
+        /* Add a GeoJSON source containing place coordinates and information. */
+        "source": {
+          "type": "geojson",
+          "data": sites
+        }
       });
+      map.addLayer({
+        'id': 'poi-labels',
+        'type': 'symbol',
+        'source': 'locations',
+        'layout': {
+        'text-field': ['get', 'address'],
+        'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
+        'text-radial-offset': 0.5,
+        'text-justify': 'auto',
+        'icon-image': ['get', 'icon']
+        }
+        });
 
       setMap(map);
     });
@@ -105,19 +132,28 @@ const Map = () => {
 
   const paint = () => {
     if (map) {
-      map.setPaintProperty('countries', 'fill-color', {
-        property: active.property,
-        stops: active.stops
-      });
+      // map.setPaintProperty('countries', 'fill-color', {
+      //   property: active.property,
+      //   stops: active.stops
+      // });
     }
   };
 
+  const onClickFindPlace = useCallback( (lng, lat) => {
+    map.setCenter([lng, lat]);
+    
+  }, [map]);
+
+  const onClearPlace = useCallback(  () => {
+    
+  }, [map, mapLoadedFlg]);
+
   const changeState = i => {
     setActive(options[i]);
-    map.setPaintProperty('countries', 'fill-color', {
-      property: active.property,
-      stops: active.stops
-    });
+    // map.setPaintProperty('countries', 'fill-color', {
+    //   property: active.property,
+    //   stops: active.stops
+    // });
   };
 
   return (
@@ -129,6 +165,10 @@ const Map = () => {
         property={active.property}
         changeState={changeState}
       />
+      <SearchLocation
+          onClickResult={onClickFindPlace}
+          onClear={onClearPlace}
+        />
     </div>
   );
 };
