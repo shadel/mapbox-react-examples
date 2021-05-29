@@ -42,7 +42,9 @@ const styles = (theme) => ({
     position: "absolute",
     width: "100%",
     top: "calc(100% + 4px)",
-    left: 0
+    left: 0,
+    maxHeight: `300px`,
+    overflowY: "scroll"
   }
 });
 
@@ -87,14 +89,14 @@ class SearchLocation extends React.Component {
       keyword: "",
       result: []
     });
-    
+
     if (this.props.onClear) {
       this.props.onClear();
     }
   };
 
   onChangeAccess = (event) => {
-    this.setState({access: event.target.value})
+    this.setState({ access: event.target.value })
   }
 
   render() {
@@ -130,21 +132,22 @@ class SearchLocation extends React.Component {
         {result.length > 0 && (
           <Paper className={classes.result}>
             <List className={classes.list}>
-              {result.map(item => (
-                <ListItem
-                  button={true}
-                  className={classes.listItem}
-                  onClick={this.onClickResult(item)}
-                  key={item.properties.address}
-                >
-                  <ListItemText
-                    classes={{
-                      primary: classes.listText
-                    }}
-                    primary={item.properties.address}
-                  />
-                </ListItem>
-              ))}
+
+                {result.map(item => (
+                  <ListItem
+                    button={true}
+                    className={classes.listItem}
+                    onClick={this.onClickResult(item)}
+                    key={item.properties.address}
+                  >
+                    <ListItemText
+                      classes={{
+                        primary: classes.listText
+                      }}
+                      primary={item.properties.address}
+                    />
+                  </ListItem>
+                ))}
 
             </List>
           </Paper>
