@@ -65,7 +65,9 @@ class SearchLocation extends React.Component {
     e.persist();
     if (!target.value) {
       this.setState(state => ({ ...state, result: [] }));
-      this.props.onClear();
+      if (this.props.onClear) {
+        this.props.onClear();
+      }
     }
     this.debounceCallGeoService(() => {
       if (target.value) {
@@ -85,7 +87,10 @@ class SearchLocation extends React.Component {
       keyword: "",
       result: []
     });
-    this.props.onClear();
+    
+    if (this.props.onClear) {
+      this.props.onClear();
+    }
   };
 
   onChangeAccess = (event) => {
